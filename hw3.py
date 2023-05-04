@@ -10,35 +10,35 @@ class conditional_independence():
         self.C = {0: 0.5, 1: 0.5}  # P(C=c)
 
         self.X_Y = {
-            (0, 0): 0.09,
-            (0, 1): 0.21,
-            (1, 0): 0.21,
-            (1, 1): 0.49
+            (0, 0): 0.1,
+            (0, 1): 0.2,
+            (1, 0): 0.2,
+            (1, 1): 0.5
         }  # P(X=x, Y=y)
 
         self.X_C = {
-            (0, 0): 0.15,
-            (0, 1): 0.15,
-            (1, 0): 0.35,
-            (1, 1): 0.35
+            (0, 0): 0.2,
+            (0, 1): 0.2,
+            (1, 0): 0.3,
+            (1, 1): 0.3
         }  # P(X=x, C=y)
 
         self.Y_C = {
-            (0, 0): 0.15,
-            (0, 1): 0.15,
-            (1, 0): 0.35,
-            (1, 1): 0.35
+            (0, 0): 0.1,
+            (0, 1): 0.1,
+            (1, 0): 0.4,
+            (1, 1): 0.4
         }  # P(Y=y, C=c)
 
         self.X_Y_C = {
-            (0, 0, 0): 0.045,
-            (0, 0, 1): 0.045,
-            (0, 1, 0): 0.105,
-            (0, 1, 1): 0.105,
-            (1, 0, 0): 0.105,
-            (1, 0, 1): 0.105,
-            (1, 1, 0): 0.245,
-            (1, 1, 1): 0.245,
+            (0, 0, 0): 0.04,
+            (0, 0, 1): 0.04,
+            (0, 1, 0): 0.16,
+            (0, 1, 1): 0.16,
+            (1, 0, 0): 0.06,
+            (1, 0, 1): 0.06,
+            (1, 1, 0): 0.24,
+            (1, 1, 1): 0.24,
         }  # P(X=x, Y=y, C=c)
 
     def is_X_Y_dependent(self):
@@ -53,10 +53,10 @@ class conditional_independence():
         ###########################################################################
         
         for x_value, y_value in X_Y.keys():
-            if np.isclose(X.get(x_value) * Y.get(y_value), X_Y.get((x_value, y_value))):
-                return False
+            if not np.isclose(X.get(x_value) * Y.get(y_value), X_Y.get((x_value, y_value))):
+                return True
         
-        return True
+        return False
 
         ###########################################################################
         #                             END OF YOUR CODE                            #
@@ -184,9 +184,11 @@ def normal_pdf(x, mean, std):
     """
     p = None
     ###########################################################################
-    # TODO: Implement the function.                                           #
+    # Implement the function.                                                 #
     ###########################################################################
-    pass
+    if std != 0:
+        p = 1 / np.sqrt(2 * np.pi * np.square(std))
+        p *= np.e ** (-(1 / 2) * (np.square(x - mean) / np.square(std)))
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -203,9 +205,55 @@ class NaiveNormalClassDistribution():
         - class_value : The class to calculate the parameters for.
         """
         ###########################################################################
-        # TODO: Implement the function.                                           #
+        # Implement the function.                                                 #
         ###########################################################################
-        pass
+        # Original class value 
+        self.class_value = class_value
+
+        # Original data 
+        self.dataset = dataset
+
+        # A part of the dataset where the last column values (label) equals to class_value.
+        # I use this variable at the calc_mean() and clac_std().
+        self.rows_with_class_value_as_label = dataset[dataset[:, -1] == class_value]
+
+        self.mean = None
+        self.calc_mean()
+
+        self.std = None
+        self.calc_std()
+        ###########################################################################
+        #                             END OF YOUR CODE                            #
+        ###########################################################################
+
+    def calc_mean(self):
+        """
+        Computed the mean from a given data set.
+        
+        Input
+        - dataset: The dataset as a 2d numpy array, assuming the class label is the last column
+        - class_value : The class to calculate the parameters for.
+        """
+        ###########################################################################
+        # Implement the function.                                                 #
+        ###########################################################################
+        self.mean = np.mean(self.rows_with_class_value_as_label, 0)
+        ###########################################################################
+        #                             END OF YOUR CODE                            #
+        ###########################################################################
+
+    def calc_std(self):
+        """
+        Computed the std from a given data set.
+        
+        Input
+        - dataset: The dataset as a 2d numpy array, assuming the class label is the last column
+        - class_value : The class to calculate the parameters for.
+        """
+        ###########################################################################
+        # Implement the function.                                                 #
+        ###########################################################################
+        self.std = np.std(self.rows_with_class_value_as_label, 0)
         ###########################################################################
         #                             END OF YOUR CODE                            #
         ###########################################################################
@@ -216,9 +264,9 @@ class NaiveNormalClassDistribution():
         """
         prior = None
         ###########################################################################
-        # TODO: Implement the function.                                           #
+        # Implement the function.                                                 #
         ###########################################################################
-        pass
+        prior = self.rows_with_class_value_as_label.shape[0] / self.dataset.shape[0]
         ###########################################################################
         #                             END OF YOUR CODE                            #
         ###########################################################################
@@ -230,9 +278,12 @@ class NaiveNormalClassDistribution():
         """
         likelihood = None
         ###########################################################################
-        # TODO: Implement the function.                                           #
+        # Implement the function.                                                 #
         ###########################################################################
-        pass
+        likelihood = 1
+
+        for column_index in range(x.shape[0] - 1):
+            likelihood *= normal_pdf(x[column_index], self.mean[column_index], self.std[column_index])
         ###########################################################################
         #                             END OF YOUR CODE                            #
         ###########################################################################
@@ -245,9 +296,9 @@ class NaiveNormalClassDistribution():
         """
         posterior = None
         ###########################################################################
-        # TODO: Implement the function.                                           #
+        # Implement the function.                                                 #
         ###########################################################################
-        pass
+        posterior = self.get_prior() * self.get_instance_likelihood(x)
         ###########################################################################
         #                             END OF YOUR CODE                            #
         ###########################################################################
@@ -269,9 +320,10 @@ class MAPClassifier():
                      for the distribution of class 1.
         """
         ###########################################################################
-        # TODO: Implement the function.                                           #
+        # Implement the function.                                                 #
         ###########################################################################
-        pass
+        self.ccd0 = ccd0
+        self.ccd1 = ccd1
         ###########################################################################
         #                             END OF YOUR CODE                            #
         ###########################################################################
@@ -287,9 +339,9 @@ class MAPClassifier():
         """
         pred = None
         ###########################################################################
-        # TODO: Implement the function.                                           #
+        # Implement the function.                                                 #
         ###########################################################################
-        pass
+        pred = 0 if self.ccd0.get_instance_posterior(x) > self.ccd1.get_instance_posterior(x) else 1
         ###########################################################################
         #                             END OF YOUR CODE                            #
         ###########################################################################
@@ -308,9 +360,15 @@ def compute_accuracy(test_set, map_classifier):
     """
     acc = None
     ###########################################################################
-    # TODO: Implement the function.                                           #
+    # Implement the function.                                                 #
     ###########################################################################
-    pass
+    count_currect_predictions = 0
+
+    for line_index in range(test_set.shape[0]):
+        count_currect_predictions += 1 if map_classifier.predict(test_set[line_index, :]) == test_set[line_index, :][-1] else 0
+
+    acc = count_currect_predictions / test_set.shape[0]
+
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
